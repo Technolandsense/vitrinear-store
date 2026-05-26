@@ -3,24 +3,11 @@ import { useRouter } from "next/router";
 import { supabasePublic } from "../lib/supabase";
 import { STORE_SLUG } from "../lib/store";
 
-const FontLoader = () => (
-  <style dangerouslySetInnerHTML={{__html:`
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    :root{
-      --navy:#0F1923;--coral:#FF4B2B;--cream:#FAF8F4;
-      --grey:#F2EEE8;--mid:#8A8A8A;--text:#1C1C1C;--border:#E5E0D8;
-    }
-    body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--cream);color:var(--text)}
-    h1,h2,h3,h4,h5{font-family:'Syne',sans-serif}
-    button{cursor:pointer;border:none;outline:none;font-family:'Plus Jakarta Sans',sans-serif}
-    input,select{font-family:'Plus Jakarta Sans',sans-serif}
-    ::-webkit-scrollbar{width:4px}
-    ::-webkit-scrollbar-thumb{background:var(--coral);border-radius:2px}
-    @keyframes slideIn{from{transform:translateX(100%)}to{transform:none}}
-    @keyframes popIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
-    @keyframes fadeUp{from{opacity:0;transform:translateX(-50%) translateY(12px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
-  `}}></style>
-);
+const FontLoader = ({ s }) => {
+  const cv = (k, d) => s?.[k] || d;
+  const css = `*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}:root{--navy:${cv('color_dark','#0F1923')};--coral:${cv('color_primary','#FF4B2B')};--cream:${cv('color_bg','#FAF8F4')};--grey:${cv('color_grey','#F2EEE8')};--mid:#8A8A8A;--text:${cv('color_text','#1C1C1C')};--border:#E5E0D8}body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--cream);color:var(--text)}h1,h2,h3,h4,h5{font-family:'Syne',sans-serif}button{cursor:pointer;border:none;outline:none;font-family:'Plus Jakarta Sans',sans-serif}input,select{font-family:'Plus Jakarta Sans',sans-serif}::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(--coral);border-radius:2px}@keyframes slideIn{from{transform:translateX(100%)}to{transform:none}}@keyframes popIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}@keyframes fadeUp{from{opacity:0;transform:translateX(-50%) translateY(12px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}`;
+  return <style dangerouslySetInnerHTML={{__html: css}}></style>;
+};
 
 const fmt = (n) => "$ " + n.toLocaleString("es-AR");
 const disc = (p,o) => o ? Math.round((1-p/o)*100) : 0;
@@ -275,7 +262,7 @@ export default function VitrineAR(){
 
   return (
     <div style={{minHeight:"100vh",background:"var(--cream)"}}>
-      <FontLoader/>
+      <FontLoader s={settings}/>
 
       {toast&&<div style={{position:"fixed",bottom:20,left:"50%",transform:"translateX(-50%)",zIndex:9999,background:"var(--navy)",color:"#fff",padding:"10px 18px",borderRadius:12,fontSize:12,fontWeight:600,boxShadow:"0 8px 32px rgba(0,0,0,.3)",animation:"fadeUp .3s ease",whiteSpace:"nowrap"}}>{toast}</div>}
 
@@ -301,15 +288,21 @@ export default function VitrineAR(){
       </header>
 
       {/* HERO */}
-      <section style={{background:"linear-gradient(135deg,var(--navy) 0%,#1a2840 60%,#0d2035 100%)",padding:"56px 20px",textAlign:"center",position:"relative",overflow:"hidden"}}>
-        <div style={{position:"absolute",top:-50,right:-50,width:280,height:280,borderRadius:"50%",background:"rgba(255,75,43,.07)"}}/>
-        <div style={{position:"absolute",bottom:-70,left:-70,width:360,height:360,borderRadius:"50%",background:"rgba(255,75,43,.05)"}}/>
+      <section style={{
+        background: settings.banner_url
+          ? `url(${settings.banner_url}) center/cover no-repeat`
+          : `linear-gradient(135deg,var(--navy) 0%,#1a2840 60%,#0d2035 100%)`,
+        padding:"56px 20px",textAlign:"center",position:"relative",overflow:"hidden"
+      }}>
+        {settings.banner_url && <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.5)"}}/>}
+        {!settings.banner_url && <><div style={{position:"absolute",top:-50,right:-50,width:280,height:280,borderRadius:"50%",background:"rgba(255,75,43,.07)"}}/>
+        <div style={{position:"absolute",bottom:-70,left:-70,width:360,height:360,borderRadius:"50%",background:"rgba(255,75,43,.05)"}}/></>}
         <div style={{maxWidth:640,margin:"0 auto",position:"relative"}}>
-          <span style={{background:"var(--coral)",color:"#fff",fontSize:11,fontWeight:700,padding:"4px 14px",borderRadius:20,letterSpacing:1,textTransform:"uppercase",display:"inline-block",marginBottom:14}}>🔥 Ofertas especiales</span>
+          <span style={{background:"var(--coral)",color:"#fff",fontSize:11,fontWeight:700,padding:"4px 14px",borderRadius:20,letterSpacing:1,textTransform:"uppercase",display:"inline-block",marginBottom:14}}>{settings.banner_tag || '🔥 Ofertas especiales'}</span>
           <h2 style={{color:"#fff",fontSize:"clamp(26px,4.5vw,48px)",fontWeight:800,lineHeight:1.15,marginBottom:14}}>
-            Todo lo que necesitás,<br/><span style={{color:"var(--coral)"}}>en un solo lugar</span>
+            {settings.banner_title || 'Todo lo que necesitás'}<br/><span style={{color:"var(--coral)"}}>{settings.banner_subtitle || 'en un solo lugar'}</span>
           </h2>
-          <p style={{color:"rgba(255,255,255,.6)",fontSize:15,marginBottom:28,lineHeight:1.6}}>Electrónica, hogar, bazar y más — pago seguro, envío a Córdoba</p>
+          <p style={{color:"rgba(255,255,255,.6)",fontSize:15,marginBottom:28,lineHeight:1.6}}>{settings.banner_desc || 'Electrónica, hogar, bazar y más — pago seguro, envío a Córdoba'}</p>
           <div style={{display:"flex",gap:10,justifyContent:"center",flexWrap:"wrap"}}>
             <button onClick={()=>setCat("Electrónica")} style={{padding:"12px 26px",background:"var(--coral)",color:"#fff",borderRadius:12,fontWeight:800,fontSize:14,fontFamily:"'Syne',sans-serif",boxShadow:"0 4px 18px rgba(255,75,43,.5)"}}>Ver electrónica →</button>
             <button onClick={()=>setCat("Todos")} style={{padding:"12px 26px",background:"rgba(255,255,255,.1)",color:"#fff",borderRadius:12,fontWeight:700,fontSize:14,border:"1.5px solid rgba(255,255,255,.2)"}}>Ver todo el catálogo</button>
