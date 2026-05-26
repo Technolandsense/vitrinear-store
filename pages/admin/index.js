@@ -11,11 +11,10 @@ export default function Admin() {
     fetch('/api/auth/me')
       .then(r => r.json())
       .then(d => {
-        if (d.authenticated) {
+        if (d.authenticated && (!IS_MAIN || d.role === 'superadmin')) {
           setLogged(true);
-          if (!IS_MAIN || d.role === 'superadmin') loadOrders();
+          loadOrders();
         }
-        if (IS_MAIN && d.authenticated) setLogged(true);
       });
   }, []);
 
