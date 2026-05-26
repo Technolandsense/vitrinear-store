@@ -22,6 +22,7 @@ export default function AdminNav() {
         </button>
       ))}
       <div style={{ flex: 1 }} />
+      <button onClick={async () => { await fetch('/api/auth/logout', { method: 'POST' }); router.push('/admin'); }} style={{ padding: '6px 12px', borderRadius: 8, border: '1px solid rgba(255,75,43,.3)', color: '#FF4B2B', fontSize: 11, background: 'none' }}>🚪 Salir</button>
       <button onClick={() => router.push('/')} style={{ padding: '6px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,.15)', color: 'rgba(255,255,255,.5)', fontSize: 11, background: 'none' }}>← Tienda</button>
     </div>
   );
