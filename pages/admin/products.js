@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabasePublic } from '../../lib/supabase';
 import AdminNav from '../../components/AdminNav';
 import { requireAdmin } from '../../lib/auth-check';
+import { STORE_SLUG } from '../../lib/store';
 
 export const getServerSideProps = requireAdmin;
 
@@ -13,9 +14,10 @@ export default function AdminProducts() {
   const [form, setForm] = useState({ name: '', category: '', price: '', old_price: '', image: '📦', tag: '', rating: 4.5, reviews: 0, description: '', image_urls: [] });
 
   const load = async () => {
+    const sf = STORE_SLUG ? (q) => q.eq('store_slug', STORE_SLUG) : (q) => q;
     const [prodRes, catRes] = await Promise.all([
-      supabasePublic.from('products').select('*').order('id'),
-      supabasePublic.from('categories').select('*').order('sort_order')
+      sf(supabasePublic.from('products').select('*')).order('id'),
+      sf(supabasePublic.from('categories').select('*')).order('sort_order')
     ]);
     setProducts(prodRes.data || []);
     setCategories(catRes.data || []);

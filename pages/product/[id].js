@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { supabasePublic } from '../../lib/supabase';
+import { STORE_SLUG } from '../../lib/store';
 
 const fmt = (n) => "$ " + Number(n).toLocaleString("es-AR");
 const disc = (p, o) => o ? Math.round((1 - p / o) * 100) : 0;
@@ -16,10 +17,11 @@ export default function ProductDetail() {
 
   useEffect(() => {
     if (!id) return;
+    const sf = STORE_SLUG ? (t) => t.eq('store_slug', STORE_SLUG) : (t) => t;
     supabasePublic.from('products').select('*').eq('id', id).single().then(({ data }) => {
       setP(data);
       if (data) {
-        supabasePublic.from('products').select('*').eq('category', data.category).neq('id', data.id).limit(4).then(({ data: rel }) => setRelated(rel || []));
+        sf(supabasePublic.from('products').select('*').eq('category', data.category).neq('id', data.id)).limit(4).then(({ data: rel }) => setRelated(rel || []));
       }
     });
   }, [id]);

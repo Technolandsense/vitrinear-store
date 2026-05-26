@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabasePublic } from '../../lib/supabase';
 import AdminNav from '../../components/AdminNav';
 import { requireAdmin } from '../../lib/auth-check';
+import { STORE_SLUG } from '../../lib/store';
 
 export const getServerSideProps = requireAdmin;
 
@@ -11,7 +12,8 @@ export default function AdminSettings() {
   const [msg, setMsg] = useState('');
 
   useEffect(() => {
-    supabasePublic.from('settings').select('*').then(({ data }) => {
+    const sf = STORE_SLUG ? (q) => q.eq('store_slug', STORE_SLUG) : (q) => q;
+    sf(supabasePublic.from('settings').select('*')).then(({ data }) => {
       const obj = {};
       (data || []).forEach(s => obj[s.key] = s.value);
       setSettings(obj);

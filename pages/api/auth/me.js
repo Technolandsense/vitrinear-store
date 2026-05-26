@@ -6,5 +6,9 @@ export default function handler(req, res) {
 
   if (!payload) return res.status(200).json({ authenticated: false });
 
-  res.status(200).json({ authenticated: true, role: payload.role });
+  res.status(200).json({
+    authenticated: true,
+    role: payload.role,
+    store_slug: payload.store_slug || null
+  });
 }

@@ -3,7 +3,7 @@ import { supabaseAdmin } from '../../lib/supabase-admin';
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Método no permitido' });
 
-  const { customer, cart, method } = req.body;
+  const { customer, cart, method, store_slug } = req.body;
 
   if (!customer || !cart || !method) {
     return res.status(400).json({ error: 'Faltan datos requeridos' });
@@ -44,6 +44,7 @@ export default async function handler(req, res) {
         cart: cart,
         payment_method: method,
         total: calculatedTotal,
+        store_slug: store_slug || '__main__',
         status: method === 'transfer' ? 'pending_transfer' : 'pending_payment',
         created_at: new Date().toISOString()
       }

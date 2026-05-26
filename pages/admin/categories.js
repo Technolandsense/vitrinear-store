@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabasePublic } from '../../lib/supabase';
 import AdminNav from '../../components/AdminNav';
 import { requireAdmin } from '../../lib/auth-check';
+import { STORE_SLUG } from '../../lib/store';
 
 export const getServerSideProps = requireAdmin;
 
@@ -10,7 +11,8 @@ export default function AdminCategories() {
   const [newName, setNewName] = useState('');
 
   useEffect(() => {
-    supabasePublic.from('categories').select('*').order('sort_order').then(({ data }) => setCats(data || []));
+    const sf = STORE_SLUG ? (q) => q.eq('store_slug', STORE_SLUG) : (q) => q;
+    sf(supabasePublic.from('categories').select('*')).order('sort_order').then(({ data }) => setCats(data || []));
   }, []);
 
   const add = async () => {
@@ -21,7 +23,8 @@ export default function AdminCategories() {
       body: JSON.stringify({ name: newName.trim(), sort_order: cats.length + 1 })
     });
     setNewName('');
-    const { data } = await supabasePublic.from('categories').select('*').order('sort_order');
+    const sf = STORE_SLUG ? (q) => q.eq('store_slug', STORE_SLUG) : (q) => q;
+    const { data } = await sf(supabasePublic.from('categories').select('*')).order('sort_order');
     setCats(data || []);
   };
 
@@ -32,7 +35,8 @@ export default function AdminCategories() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id })
     });
-    const { data } = await supabasePublic.from('categories').select('*').order('sort_order');
+    const sf = STORE_SLUG ? (q) => q.eq('store_slug', STORE_SLUG) : (q) => q;
+    const { data } = await sf(supabasePublic.from('categories').select('*')).order('sort_order');
     setCats(data || []);
   };
 

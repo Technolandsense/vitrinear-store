@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { supabasePublic } from "../lib/supabase";
+import { STORE_SLUG } from "../lib/store";
 
 const FontLoader = () => (
   <style dangerouslySetInnerHTML={{__html:`
@@ -120,7 +121,7 @@ function CheckoutModal({cart,onClose,onSuccess,settings}){
       const r = await fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ customer: form, cart, method: methodId, total })
+        body: JSON.stringify({ customer: form, cart, method: methodId, total, store_slug: STORE_SLUG })
       });
       const d = await r.json();
       if (!r.ok) { alert('Error al crear pedido: ' + (d.error || 'desconocido')); setSaving(false); return; }
@@ -238,10 +239,11 @@ export default function VitrineAR(){
   const [categories,setCategories]=useState([]);
 
   useEffect(() => {
+    const sf = STORE_SLUG ? (t) => t.eq('store_slug', STORE_SLUG) : (t) => t;
     Promise.all([
-      supabasePublic.from('products').select('*').eq('active', true).order('id'),
-      supabasePublic.from('settings').select('*'),
-      supabasePublic.from('categories').select('*').order('sort_order')
+      sf(supabasePublic.from('products').select('*').eq('active', true)).order('id'),
+      sf(supabasePublic.from('settings').select('*')),
+      sf(supabasePublic.from('categories').select('*')).order('sort_order')
     ]).then(([prodRes, setRes, catRes]) => {
       setProducts(prodRes.data || []);
       const obj = {};
