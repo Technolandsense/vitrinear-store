@@ -17,13 +17,18 @@ export default async function handler(req, res) {
     return res.status(200).json({ success: true, role: 'superadmin' });
   }
 
-  const { data: store } = await supabaseAdmin
-    .from('stores')
-    .select('admin_password')
-    .eq('slug', STORE_SLUG)
-    .single();
+  let storePassword = process.env.ADMIN_PASSWORD;
 
-  if (!store || password !== store.admin_password) {
+  if (!storePassword) {
+    const { data: store } = await supabaseAdmin
+      .from('stores')
+      .select('admin_password')
+      .eq('slug', STORE_SLUG)
+      .single();
+    storePassword = store?.admin_password;
+  }
+
+  if (password !== storePassword) {
     return res.status(401).json({ error: 'Contraseña incorrecta' });
   }
 
