@@ -3,7 +3,34 @@ import { supabaseAdmin } from '../../lib/supabase-admin';
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Método no permitido' });
 
-  const { customer, cart, method, total } = req.body;
+  const { customer, cart, method } = req.body;
+
+  if (!customer || !cart || !method) {
+    return res.status(400).json({ error: 'Faltan datos requeridos' });
+  }
+
+  if (!customer.nombre || !customer.email || !customer.tel || !customer.dir) {
+    return res.status(400).json({ error: 'Faltan datos del cliente' });
+  }
+
+  const productIds = cart.map(item => item.id);
+  const { data: products } = await supabaseAdmin
+    .from('products')
+    .select('id, price')
+    .in('id', productIds);
+
+  const priceMap = {};
+  (products || []).forEach(p => { priceMap[p.id] = Number(p.price); });
+
+  let calculatedTotal = 0;
+  for (const item of cart) {
+    const price = priceMap[item.id];
+    if (!price) {
+      return res.status(400).json({ error: `Producto con id ${item.id} no encontrado` });
+    }
+    calculatedTotal += price * (item.qty || 1);
+  }
+
   const orderNum = `VIT-${Math.floor(Math.random() * 90000) + 10000}`;
 
   try {
@@ -16,7 +43,7 @@ export default async function handler(req, res) {
         customer_address: customer.dir,
         cart: cart,
         payment_method: method,
-        total: total,
+        total: calculatedTotal,
         status: method === 'transfer' ? 'pending_transfer' : 'pending_payment',
         created_at: new Date().toISOString()
       }

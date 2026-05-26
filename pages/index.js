@@ -103,6 +103,8 @@ function CheckoutModal({cart,onClose,onSuccess,settings}){
   const [step,setStep]=useState(1);
   const [method,setMethod]=useState("");
   const [form,setForm]=useState({nombre:"",email:"",tel:"",dir:""});
+  const [saving,setSaving]=useState(false);
+  const [orderNum,setOrderNum]=useState("");
   const total=cart.reduce((s,i)=>s+i.price*i.qty,0);
   const count=cart.reduce((s,i)=>s+i.qty,0);
   const METHODS=[
@@ -111,8 +113,25 @@ function CheckoutModal({cart,onClose,onSuccess,settings}){
     {id:"credit",icon:"💎",label:"Tarjeta de crédito",sub:"Hasta 12 cuotas sin interés",color:"var(--coral)"},
   ];
   const allFilled=form.nombre&&form.email&&form.tel&&form.dir;
-  const handlePay=()=>method==="transfer"?setStep(3):setStep(4);
-  const orderNum=`VIT-${Math.floor(Math.random()*90000)+10000}`;
+
+  const createOrder = async (methodId) => {
+    setSaving(true);
+    try {
+      const r = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ customer: form, cart, method: methodId, total })
+      });
+      const d = await r.json();
+      if (!r.ok) { alert('Error al crear pedido: ' + (d.error || 'desconocido')); setSaving(false); return; }
+      setOrderNum(d.orderNum);
+      if (methodId === 'transfer') setStep(3);
+      else setStep(4);
+    } catch (e) {
+      alert('Error de conexión al crear pedido');
+    }
+    setSaving(false);
+  };
 
   return (
     <div style={{position:"fixed",inset:0,zIndex:2000,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(15,25,35,.75)",backdropFilter:"blur(6px)",padding:16}}>
@@ -154,7 +173,7 @@ function CheckoutModal({cart,onClose,onSuccess,settings}){
             ))}
             <div style={{display:"flex",gap:8,marginTop:2}}>
               <button onClick={()=>setStep(1)} style={{flex:1,padding:"12px",borderRadius:12,border:"1.5px solid var(--border)",fontWeight:600,fontSize:13,color:"var(--mid)",background:"#fff"}}>← Volver</button>
-              <button disabled={!method} onClick={handlePay} style={{flex:2,padding:"12px",background:"var(--coral)",color:"#fff",borderRadius:12,fontWeight:800,fontSize:14,fontFamily:"'Syne',sans-serif",opacity:!method?.5:1,cursor:!method?"not-allowed":"pointer",boxShadow:"0 4px 14px rgba(255,75,43,.35)"}}>Pagar {fmt(total)}</button>
+              <button disabled={!method || saving} onClick={() => createOrder(method)} style={{flex:2,padding:"12px",background:"var(--coral)",color:"#fff",borderRadius:12,fontWeight:800,fontSize:14,fontFamily:"'Syne',sans-serif",opacity:!method||saving?.5:1,cursor:!method||saving?"not-allowed":"pointer",boxShadow:"0 4px 14px rgba(255,75,43,.35)"}}>{saving ? '⏳ Procesando...' : `Pagar ${fmt(total)}`}</button>
             </div>
           </div>}
 
@@ -186,7 +205,7 @@ function CheckoutModal({cart,onClose,onSuccess,settings}){
             <div style={{background:"#FFF7F5",border:"1px solid #FED7CC",borderRadius:12,padding:12}}>
               <p style={{fontSize:11,color:"#9A3412",fontWeight:600}}>⚙️ Activá este botón conectando tu cuenta en mercadopago.com.ar/developers</p>
             </div>
-            <button onClick={()=>setStep(5)} style={{padding:"13px",background:"#009EE3",color:"#fff",borderRadius:12,fontWeight:800,fontSize:14,fontFamily:"'Syne',sans-serif",boxShadow:"0 4px 14px rgba(0,158,227,.4)"}}>Ir a Mercado Pago →</button>
+            <button onClick={() => createOrder(method)} disabled={saving} style={{padding:"13px",background:"#009EE3",color:"#fff",borderRadius:12,fontWeight:800,fontSize:14,fontFamily:"'Syne',sans-serif",boxShadow:"0 4px 14px rgba(0,158,227,.4)",opacity:saving?.5:1}}>{saving ? '⏳ Creando pedido...' : 'Ir a Mercado Pago →'}</button>
             <button onClick={()=>setStep(2)} style={{padding:"10px",background:"none",color:"var(--mid)",fontWeight:600,fontSize:12}}>← Cambiar método</button>
           </div>}
 

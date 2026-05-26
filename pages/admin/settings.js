@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { supabasePublic } from '../../lib/supabase';
 import AdminNav from '../../components/AdminNav';
+import { requireAdmin } from '../../lib/auth-check';
+
+export const getServerSideProps = requireAdmin;
 
 export default function AdminSettings() {
   const [settings, setSettings] = useState({});
@@ -18,10 +21,17 @@ export default function AdminSettings() {
   const save = async () => {
     setSaving(true);
     setMsg('');
-    for (const [key, value] of Object.entries(settings)) {
-      await supabasePublic.from('settings').upsert({ key, value }, { onConflict: 'key' });
+    const entries = Object.entries(settings).map(([key, value]) => ({ key, value }));
+    const r = await fetch('/api/admin/settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ settings: entries })
+    });
+    if (r.ok) {
+      setMsg('✅ Guardado correctamente');
+    } else {
+      setMsg('❌ Error al guardar');
     }
-    setMsg('✅ Guardado correctamente');
     setSaving(false);
     setTimeout(() => setMsg(''), 3000);
   };
@@ -76,7 +86,7 @@ export default function AdminSettings() {
           <button onClick={save} disabled={saving} style={{ width: '100%', padding: '12px', background: '#FF4B2B', color: '#fff', borderRadius: 10, fontWeight: 700, fontSize: 14, marginTop: 8, opacity: saving ? 0.6 : 1 }}>
             {saving ? 'Guardando...' : '💾 Guardar configuración'}
           </button>
-          {msg && <p style={{ textAlign: 'center', marginTop: 12, fontWeight: 600, fontSize: 13, color: '#16A34A' }}>{msg}</p>}
+          {msg && <p style={{ textAlign: 'center', marginTop: 12, fontWeight: 600, fontSize: 13, color: msg.includes('✅') ? '#16A34A' : '#EF4444' }}>{msg}</p>}
         </div>
       </div>
     </div>

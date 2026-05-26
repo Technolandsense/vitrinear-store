@@ -1,27 +1,50 @@
 import { useState, useEffect } from 'react';
-import { supabasePublic } from '../../lib/supabase';
 import AdminNav from '../../components/AdminNav';
 
 export default function Admin() {
   const [logged, setLogged] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [password, setPassword] = useState('');
   const [orders, setOrders] = useState([]);
 
   useEffect(() => {
-    if (logged) {
-      supabasePublic.from('orders').select('*').order('created_at', { ascending: false })
-        .then(({ data }) => setOrders(data || []));
-    }
-  }, [logged]);
+    fetch('/api/auth/me')
+      .then(r => r.json())
+      .then(d => {
+        if (d.authenticated) {
+          setLogged(true);
+          loadOrders();
+        }
+        setLoading(false);
+      });
+  }, []);
 
-  const login = () => {
-    if (password === 'admin123') {
+  const loadOrders = async () => {
+    const r = await fetch('/api/admin/orders');
+    const data = await r.json();
+    setOrders(data || []);
+  };
+
+  const login = async () => {
+    const r = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password })
+    });
+    if (r.ok) {
       setLogged(true);
+      loadOrders();
+    } else {
+      alert('Contraseña incorrecta');
     }
   };
 
   const approveTransfer = async (id) => {
-    await supabasePublic.from('orders').update({ status: 'approved' }).eq('id', id);
+    await fetch('/api/admin/orders', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, status: 'approved' })
+    });
     setOrders(orders.map(o => o.id === id ? { ...o, status: 'approved' } : o));
   };
 
@@ -35,6 +58,7 @@ export default function Admin() {
             placeholder="Contraseña"
             value={password}
             onChange={e => setPassword(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && login()}
             style={{ width: '100%', padding: 12, borderRadius: 10, border: '1.5px solid #E5E0D8', marginBottom: 12 }}
           />
           <button onClick={login} style={{ width: '100%', padding: 12, background: '#FF4B2B', color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700 }}>Entrar</button>
@@ -47,7 +71,7 @@ export default function Admin() {
     <div style={{ minHeight: '100vh', background: '#FAF8F4' }}>
       <AdminNav />
       <div style={{ maxWidth: 900, margin: '0 auto', padding: '30px 20px' }}>
-      <h1 style={{ color: '#0F1923', marginBottom: 20 }}>📋 Pedidos ({orders.length})</h1>
+      <h1 style={{ color: '#0F1923', marginBottom: 20 }}> Pedidos ({orders.length})</h1>
       <div style={{ display: 'grid', gap: 14 }}>
         {orders.map(order => (
           <div key={order.id} style={{ background: '#fff', padding: 18, borderRadius: 14, border: '1.5px solid #E5E0D8' }}>

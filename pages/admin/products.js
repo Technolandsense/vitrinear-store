@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { supabasePublic } from '../../lib/supabase';
 import AdminNav from '../../components/AdminNav';
+import { requireAdmin } from '../../lib/auth-check';
+
+export const getServerSideProps = requireAdmin;
 
 export default function AdminProducts() {
   const [products, setProducts] = useState([]);
@@ -35,13 +38,11 @@ export default function AdminProducts() {
   const save = async () => {
     const urls = form.image_urls.filter(u => u);
     const payload = { ...form, price: Number(form.price), old_price: form.old_price ? Number(form.old_price) : null, rating: Number(form.rating), reviews: Number(form.reviews), image_urls: urls, image_url: urls[0] || '' };
-    delete payload.image_urls; // avoid sending raw array
-    payload.image_urls = urls;
-    if (editId) {
-      await supabasePublic.from('products').update(payload).eq('id', editId);
-    } else {
-      await supabasePublic.from('products').insert([payload]);
-    }
+    await fetch('/api/admin/products', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(editId ? { id: editId, ...payload } : payload)
+    });
     resetForm();
     load();
   };
@@ -60,12 +61,20 @@ export default function AdminProducts() {
 
   const remove = async (id) => {
     if (!confirm('¿Eliminar producto?')) return;
-    await supabasePublic.from('products').delete().eq('id', id);
+    await fetch('/api/admin/products', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id })
+    });
     load();
   };
 
   const toggleActive = async (id, current) => {
-    await supabasePublic.from('products').update({ active: !current }).eq('id', id);
+    await fetch('/api/admin/products', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, active: !current })
+    });
     load();
   };
 

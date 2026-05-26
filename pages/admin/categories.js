@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { supabasePublic } from '../../lib/supabase';
 import AdminNav from '../../components/AdminNav';
+import { requireAdmin } from '../../lib/auth-check';
+
+export const getServerSideProps = requireAdmin;
 
 export default function AdminCategories() {
   const [cats, setCats] = useState([]);
@@ -12,7 +15,11 @@ export default function AdminCategories() {
 
   const add = async () => {
     if (!newName.trim()) return;
-    await supabasePublic.from('categories').insert([{ name: newName.trim(), sort_order: cats.length + 1 }]);
+    await fetch('/api/admin/categories', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: newName.trim(), sort_order: cats.length + 1 })
+    });
     setNewName('');
     const { data } = await supabasePublic.from('categories').select('*').order('sort_order');
     setCats(data || []);
@@ -20,13 +27,21 @@ export default function AdminCategories() {
 
   const remove = async (id) => {
     if (!confirm('¿Eliminar categoría?')) return;
-    await supabasePublic.from('categories').delete().eq('id', id);
+    await fetch('/api/admin/categories', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id })
+    });
     const { data } = await supabasePublic.from('categories').select('*').order('sort_order');
     setCats(data || []);
   };
 
   const rename = async (id, name) => {
-    await supabasePublic.from('categories').update({ name }).eq('id', id);
+    await fetch('/api/admin/categories', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, name })
+    });
   };
 
   return (
