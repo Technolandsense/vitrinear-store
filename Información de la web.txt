@@ -1,0 +1,11 @@
+URLs:
+
+Tienda: https://vitrinear.vercel.app
+Admin: https://vitrinear.vercel.app/admin
+Config: https://vitrinear.vercel.app/admin/settings
+Pendiente: conectá Mercado Pago para cobrar con tarjeta. Cuando quieras:
+
+Andá a https://mercadopago.com.ar/developers
+Copiá tu Access Token
+En Vercel: Project → Settings → Environment Variables → actualizá MERCADO_PAGO_ACCESS_TOKEN
+Redeploy

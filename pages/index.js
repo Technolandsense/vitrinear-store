@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
 import { supabasePublic } from "../lib/supabase";
 
 const FontLoader = () => (
@@ -20,7 +21,6 @@ const FontLoader = () => (
   `}}></style>
 );
 
-const CATEGORIES = ["Todos","Electrónica","Bazar","Hogar","Varios"];
 const fmt = (n) => "$ " + n.toLocaleString("es-AR");
 const disc = (p,o) => o ? Math.round((1-p/o)*100) : 0;
 
@@ -30,13 +30,14 @@ function Stars({r}){
 
 function ProductCard({p,onAdd}){
   const [hover,setHover]=useState(false);
+  const router = useRouter();
   const pct=disc(p.price,p.old_price);
   return (
-    <div onMouseEnter={()=>setHover(true)} onMouseLeave={()=>setHover(false)} style={{background:"#fff",borderRadius:16,overflow:"hidden",border:`1.5px solid ${hover?"var(--coral)":"var(--border)"}`,transition:"all .25s ease",transform:hover?"translateY(-4px)":"none",boxShadow:hover?"0 12px 32px rgba(255,75,43,.15)":"0 2px 8px rgba(0,0,0,.06)",display:"flex",flexDirection:"column"}}>
+    <div onMouseEnter={()=>setHover(true)} onMouseLeave={()=>setHover(false)} style={{background:"#fff",borderRadius:16,overflow:"hidden",border:`1.5px solid ${hover?"var(--coral)":"var(--border)"}`,transition:"all .25s ease",transform:hover?"translateY(-4px)":"none",boxShadow:hover?"0 12px 32px rgba(255,75,43,.15)":"0 2px 8px rgba(0,0,0,.06)",display:"flex",flexDirection:"column",cursor:"pointer"}} onClick={() => router.push(`/product/${p.id}`)}>
       <div style={{background:"linear-gradient(135deg,var(--grey) 0%,#EDE9E0 100%)",height:160,display:"flex",alignItems:"center",justifyContent:"center",fontSize:64,position:"relative"}}>
         {p.tag&&<span style={{position:"absolute",top:10,left:10,background:p.tag==="Oferta"?"var(--coral)":"var(--navy)",color:"#fff",fontSize:10,fontWeight:700,padding:"3px 10px",borderRadius:20,fontFamily:"'Syne',sans-serif"}}>{p.tag}</span>}
         {pct>0&&<span style={{position:"absolute",top:10,right:10,background:"#16A34A",color:"#fff",fontSize:10,fontWeight:700,padding:"3px 8px",borderRadius:20}}>-{pct}%</span>}
-        {p.image}
+        {p.image_urls?.[0] ? <img src={p.image_urls[0]} alt={p.name} style={{maxWidth:"80%",maxHeight:130,objectFit:"contain",borderRadius:8}} onError={e=>e.target.style.display="none"} /> : p.image}
       </div>
       <div style={{padding:"14px 14px 10px",flex:1,display:"flex",flexDirection:"column",gap:5}}>
         <span style={{fontSize:10,color:"var(--coral)",fontWeight:600,textTransform:"uppercase",letterSpacing:.5}}>{p.category}</span>
@@ -71,7 +72,7 @@ function CartDrawer({cart,onClose,onRemove,onQty,onCheckout}){
           </div>}
           {cart.map(item=>(
             <div key={item.id} style={{display:"flex",gap:10,padding:"10px",borderRadius:12,border:"1px solid var(--border)",background:"var(--cream)"}}>
-              <div style={{width:50,height:50,borderRadius:10,background:"var(--grey)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,flexShrink:0}}>{item.image}</div>
+              <div style={{width:50,height:50,borderRadius:10,background:"var(--grey)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,flexShrink:0,overflow:"hidden"}}>{item.image_urls?.[0] ? <img src={item.image_urls[0]} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}} onError={e=>e.target.style.display="none"} /> : item.image}</div>
               <div style={{flex:1,minWidth:0}}>
                 <p style={{fontSize:12,fontWeight:600,lineHeight:1.3}}>{item.name}</p>
                 <p style={{fontSize:13,fontWeight:800,color:"var(--coral)",marginTop:3,fontFamily:"'Syne',sans-serif"}}>{fmt(item.price)}</p>
@@ -215,13 +216,19 @@ export default function VitrineAR(){
   const [toast,setToast]=useState(null);
   const [products,setProducts]=useState([]);
   const [settings,setSettings]=useState({});
+  const [categories,setCategories]=useState([]);
 
   useEffect(() => {
-    supabasePublic.from('products').select('*').eq('active', true).order('id').then(({ data }) => setProducts(data || []));
-    supabasePublic.from('settings').select('*').then(({ data }) => {
+    Promise.all([
+      supabasePublic.from('products').select('*').eq('active', true).order('id'),
+      supabasePublic.from('settings').select('*'),
+      supabasePublic.from('categories').select('*').order('sort_order')
+    ]).then(([prodRes, setRes, catRes]) => {
+      setProducts(prodRes.data || []);
       const obj = {};
-      (data || []).forEach(s => obj[s.key] = s.value);
+      (setRes.data || []).forEach(s => obj[s.key] = s.value);
       setSettings(obj);
+      setCategories(catRes.data || []);
     });
   }, []);
 
@@ -301,7 +308,7 @@ export default function VitrineAR(){
       <main style={{maxWidth:1100,margin:"0 auto",padding:"36px 20px"}}>
         <div style={{display:"flex",gap:10,marginBottom:28,flexWrap:"wrap",alignItems:"center",justifyContent:"space-between"}}>
           <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
-            {CATEGORIES.map(c=>(
+            {["Todos",...categories.map(c=>c.name)].map(c=>(
               <button key={c} onClick={()=>setCat(c)} style={{padding:"7px 16px",borderRadius:30,fontWeight:700,fontSize:12,border:`1.5px solid ${cat===c?"var(--coral)":"var(--border)"}`,background:cat===c?"var(--coral)":"#fff",color:cat===c?"#fff":"var(--text)",transition:"all .2s"}}>{c}</button>
             ))}
           </div>
@@ -321,12 +328,18 @@ export default function VitrineAR(){
 
         {/* Value props */}
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(190px,1fr))",gap:14,marginTop:50}}>
-          {[{icon:"🚚",title:"Envío rápido",desc:"Córdoba capital 24-48hs"},{icon:"🔒",title:"Pago seguro",desc:"Débito, crédito o transferencia"},{icon:"↩️",title:"30 días",desc:"Cambios y devoluciones"},{icon:"🎧",title:"Soporte",desc:"WhatsApp y email"}].map(v=>(
-            <div key={v.title} style={{background:"#fff",borderRadius:14,padding:"18px",border:"1.5px solid var(--border)",display:"flex",gap:12,alignItems:"flex-start"}}>
-              <span style={{fontSize:24}}>{v.icon}</span>
-              <div><p style={{fontWeight:700,fontSize:13,color:"var(--navy)"}}>{v.title}</p><p style={{color:"var(--mid)",fontSize:11,marginTop:3}}>{v.desc}</p></div>
-            </div>
-          ))}
+          {[1,2,3,4].map(i => {
+            const icon = settings[`prop${i}_icon`];
+            const title = settings[`prop${i}_title`];
+            const desc = settings[`prop${i}_desc`];
+            if (!icon && !title && !desc) return null;
+            return (
+              <div key={i} style={{background:"#fff",borderRadius:14,padding:"18px",border:"1.5px solid var(--border)",display:"flex",gap:12,alignItems:"flex-start"}}>
+                <span style={{fontSize:24}}>{icon || '📦'}</span>
+                <div><p style={{fontWeight:700,fontSize:13,color:"var(--navy)"}}>{title || ''}</p><p style={{color:"var(--mid)",fontSize:11,marginTop:3}}>{desc || ''}</p></div>
+              </div>
+            );
+          })}
         </div>
       </main>
 

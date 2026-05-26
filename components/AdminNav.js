@@ -5,6 +5,7 @@ export default function AdminNav() {
   const links = [
     { path: '/admin', label: '📋 Pedidos' },
     { path: '/admin/products', label: '📦 Productos' },
+    { path: '/admin/categories', label: '🏷️ Categorías' },
     { path: '/admin/settings', label: '⚙️ Config' },
   ];
 

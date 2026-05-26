@@ -4,31 +4,39 @@ import AdminNav from '../../components/AdminNav';
 
 export default function AdminProducts() {
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState(null);
-  const [form, setForm] = useState({ name: '', category: 'Electrónica', price: '', old_price: '', image: '📦', tag: '', rating: 4.5, reviews: 0 });
+  const [form, setForm] = useState({ name: '', category: '', price: '', old_price: '', image: '📦', tag: '', rating: 4.5, reviews: 0, description: '', image_urls: [] });
 
   const load = async () => {
-    const { data } = await supabasePublic.from('products').select('*').order('id');
-    setProducts(data || []);
+    const [prodRes, catRes] = await Promise.all([
+      supabasePublic.from('products').select('*').order('id'),
+      supabasePublic.from('categories').select('*').order('sort_order')
+    ]);
+    setProducts(prodRes.data || []);
+    setCategories(catRes.data || []);
   };
 
   useEffect(() => { load(); }, []);
 
   const resetForm = () => {
-    setForm({ name: '', category: 'Electrónica', price: '', old_price: '', image: '📦', tag: '', rating: 4.5, reviews: 0 });
+    setForm({ name: '', category: categories[0]?.name || '', price: '', old_price: '', image: '📦', tag: '', rating: 4.5, reviews: 0, description: '', image_urls: [] });
     setEditId(null);
     setShowForm(false);
   };
 
   const openEdit = (p) => {
-    setForm({ name: p.name, category: p.category, price: String(p.price), old_price: p.old_price ? String(p.old_price) : '', image: p.image, tag: p.tag, rating: p.rating, reviews: p.reviews });
+    setForm({ name: p.name, category: p.category, price: String(p.price), old_price: p.old_price ? String(p.old_price) : '', image: p.image, tag: p.tag, rating: p.rating, reviews: p.reviews, description: p.description || '', image_urls: p.image_urls || [] });
     setEditId(p.id);
     setShowForm(true);
   };
 
   const save = async () => {
-    const payload = { ...form, price: Number(form.price), old_price: form.old_price ? Number(form.old_price) : null, rating: Number(form.rating), reviews: Number(form.reviews) };
+    const urls = form.image_urls.filter(u => u);
+    const payload = { ...form, price: Number(form.price), old_price: form.old_price ? Number(form.old_price) : null, rating: Number(form.rating), reviews: Number(form.reviews), image_urls: urls, image_url: urls[0] || '' };
+    delete payload.image_urls; // avoid sending raw array
+    payload.image_urls = urls;
     if (editId) {
       await supabasePublic.from('products').update(payload).eq('id', editId);
     } else {
@@ -36,6 +44,18 @@ export default function AdminProducts() {
     }
     resetForm();
     load();
+  };
+
+  const uploadImage = async (file, idx) => {
+    if (!file) return;
+    const ext = file.name.split('.').pop();
+    const fileName = `${Date.now()}-${idx}.${ext}`;
+    const { error } = await supabasePublic.storage.from('products').upload(fileName, file, { upsert: true });
+    if (error) { alert('Error al subir: ' + error.message); return; }
+    const { data: { publicUrl } } = supabasePublic.storage.from('products').getPublicUrl(fileName);
+    const urls = [...form.image_urls];
+    urls[idx] = publicUrl;
+    setForm({ ...form, image_urls: urls });
   };
 
   const remove = async (id) => {
@@ -49,7 +69,6 @@ export default function AdminProducts() {
     load();
   };
 
-  const CATEGORIES = ['Electrónica', 'Bazar', 'Hogar', 'Varios'];
   const EMOJIS = ['📺', '🎧', '❄️', '🍳', '🌀', '📱', '🥃', '☀️', '🌪️', '💡', '⌚', '🎒', '📦', '🔌', '🖥️', '⌨️', '🖨️', '📷', '🎮', '🔊'];
 
   return (
@@ -74,7 +93,7 @@ export default function AdminProducts() {
 
               <label style={{ fontSize: 11, fontWeight: 700, color: '#0F1923', display: 'block', marginBottom: 4, marginTop: 12 }}>CATEGORÍA</label>
               <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1.5px solid #E5E0D8', fontSize: 13 }}>
-                {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
               </select>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
@@ -97,6 +116,31 @@ export default function AdminProducts() {
 
               <label style={{ fontSize: 11, fontWeight: 700, color: '#0F1923', display: 'block', marginBottom: 4, marginTop: 12 }}>TAG (Oferta, Nuevo, o vacío)</label>
               <input value={form.tag} onChange={e => setForm({ ...form, tag: e.target.value })} style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1.5px solid #E5E0D8', fontSize: 13 }} />
+
+              <label style={{ fontSize: 11, fontWeight: 700, color: '#0F1923', display: 'block', marginBottom: 4, marginTop: 12 }}>DESCRIPCIÓN DEL PRODUCTO</label>
+              <textarea rows="3" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1.5px solid #E5E0D8', fontSize: 13, resize: 'vertical' }} />
+
+              <label style={{ fontSize: 11, fontWeight: 700, color: '#0F1923', display: 'block', marginBottom: 4, marginTop: 12 }}>IMÁGENES DEL PRODUCTO (hasta 3)</label>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+                {[0, 1, 2].map(idx => (
+                  <div key={idx} style={{ border: '1.5px solid #E5E0D8', borderRadius: 10, padding: 8, textAlign: 'center' }}>
+                    {form.image_urls[idx] ? (
+                      <div style={{ position: 'relative' }}>
+                        <img src={form.image_urls[idx]} alt="" style={{ width: '100%', height: 90, objectFit: 'cover', borderRadius: 6 }} />
+                        <button onClick={() => { const u = [...form.image_urls]; u[idx] = ''; setForm({ ...form, image_urls: u }); }} style={{ position: 'absolute', top: 2, right: 2, background: 'rgba(0,0,0,.5)', color: '#fff', borderRadius: '50%', width: 20, height: 20, fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+                      </div>
+                    ) : (
+                      <div style={{ height: 90, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#8A8A8A', fontSize: 11 }}>
+                        <span style={{ fontSize: 22, marginBottom: 4 }}>📷</span>
+                        Imagen {idx + 1}
+                      </div>
+                    )}
+                    <input type="file" accept="image/*" style={{ width: '100%', fontSize: 10, marginTop: 4 }} onChange={e => uploadImage(e.target.files[0], idx)} />
+                  </div>
+                ))}
+              </div>
+              <p style={{ fontSize: 10, color: '#8A8A8A', marginTop: 4 }}>O pegá URLs directamente (una por línea)</p>
+              <textarea rows="2" value={form.image_urls.join('\n')} onChange={e => setForm({ ...form, image_urls: e.target.value.split('\n').map(s => s.trim()).filter(s => s) })} placeholder="https://ejemplo.com/foto1.jpg" style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1.5px solid #E5E0D8', fontSize: 13, resize: 'vertical' }} />
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div>
