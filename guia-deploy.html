@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><title>Guía Deploy - VitrineAR</title>
+<style>
+  body{font-family:'Segoe UI',Arial,sans-serif;max-width:800px;margin:40px auto;padding:0 24px;color:#1a1a1a;line-height:1.6}
+  h1{font-size:28px;border-bottom:3px solid #FF4B2B;padding-bottom:10px}
+  h2{font-size:20px;margin-top:32px;color:#0F1923}
+  h3{font-size:16px;margin-top:20px}
+  code{background:#f4f4f4;padding:2px 6px;border-radius:4px;font-size:13px;word-break:break-all}
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+  th,td{border:1px solid #ddd;padding:8px 12px;text-align:left}
+  th{background:#0F1923;color:#fff}
+  .step{background:#FAF8F4;border-left:4px solid #FF4B2B;padding:12px 16px;margin:12px 0;border-radius:0 8px 8px 0}
+  .note{background:#fff3cd;border-left:4px solid #ffc107;padding:12px 16px;margin:12px 0;border-radius:0 8px 8px 0}
+  .copy{font-size:11px;color:#888;float:right;cursor:pointer}
+</style></head>
+<body>
+
+<h1>🛒 Guía para crear una nueva tienda</h1>
+
+<h2>1. Crear la tienda en Super Admin</h2>
+<div class="step">
+  1. Ir a <b>vitrinear.vercel.app/superadmin</b><br>
+  2. Ingresar contraseña: <code>vitrineAR777**admin</code><br>
+  3. En "Crear tienda" completar:<br>
+  &nbsp;&nbsp;- Nombre: ej. <code>Tienda Prueba</code><br>
+  &nbsp;&nbsp;- Slug: ej. <code>tienda-prueba</code> (minúsculas, sin espacios)<br>
+  &nbsp;&nbsp;- Contraseña admin: ej. <code>admin123</code><br>
+  4. Click <b>Crear tienda</b>
+</div>
+
+<h2>2. Crear proyecto en Vercel</h2>
+<div class="step">
+  1. Ir a <b>vercel.com</b> → <b>Add New</b> → <b>Project</b><br>
+  2. Importar repo: <b>Technolandsense/vitrinear-store</b><br>
+  3. Click <b>Import</b><br>
+  4. ⚠️ <b>Antes de deployar</b>, ir a <b>Environment Variables</b>
+</div>
+
+<h2>3. Agregar las 6 variables de entorno</h2>
+<p>Agregar UNA POR UNA:</p>
+<table>
+  <tr><th>Variable</th><th>Valor</th></tr>
+  <tr><td><code>NEXT_PUBLIC_SUPABASE_URL</code></td><td><code>https://cfgpwnphqtpdyethzdvr.supabase.co</code></td></tr>
+  <tr><td><code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code></td><td><code>eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNmZ3B3bnBocXRwZHlldGh6ZHZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwODY3NDQsImV4cCI6MjA5NDY2Mjc0NH0.1auNoVsNk-WbnILxuNk5juE9AZ4DFq5hZs6TpopWPFk</code></td></tr>
+  <tr><td><code>NEXT_PUBLIC_STORE_SLUG</code></td><td><code>tienda-prueba</code> (slug elegido en paso 1)</td></tr>
+  <tr><td><code>ADMIN_PASSWORD</code></td><td><code>admin123</code> (contraseña elegida en paso 1)</td></tr>
+  <tr><td><code>SUPABASE_SERVICE_ROLE_KEY</code></td><td><code>eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNmZ3B3bnBocXRwZHlldGh6ZHZyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTA4Njc0NCwiZXhwIjoyMDk0NjYyNzQ0fQ.noWSXs1oyJy9W9KHVrVgc9fR9gE7NFZmXFKrJVzXlQE</code></td></tr>
+  <tr><td><code>JWT_SECRET</code></td><td><code>vitrinear-jwt-secret-change-in-production</code></td></tr>
+</table>
+
+<p>Después click <b>Deploy</b>.</p>
+
+<h2>4. Esperar el deploy (~2 minutos)</h2>
+<p>Vercel te da la URL: <code>https://tienda-prueba.vercel.app</code></p>
+
+<h2>5. Personalizar la tienda</h2>
+<div class="step">
+  Ir a <b>https://tienda-prueba.vercel.app/admin</b><br><br>
+  🔑 Login: <code>admin123</code> (o la contraseña que elegiste)<br>
+  📦 <b>Products</b>: agregar productos (nombre, precio, fotos)<br>
+  🏷️ <b>Categories</b>: crear categorías<br>
+  ⚙️ <b>Settings</b>: nombre, colores, banner, datos de contacto
+</div>
+
+<div class="note">
+  <b>Importante:</b><br>
+  • Cada tienda <b>arranca vacía</b> — hay que cargar productos desde cero<br>
+  • Mercado Pago: agregar variable <code>MERCADO_PAGO_ACCESS_TOKEN</code> si se necesita<br>
+  • La tienda principal (<b>vitrinear.vercel.app</b>) es el hub general<br>
+  • Las tiendas-cliente solo ven sus propios productos
+</div>
+
+</body></html>
