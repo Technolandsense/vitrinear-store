@@ -111,14 +111,17 @@ function CheckoutModal({cart,onClose,onSuccess,settings}){
         body: JSON.stringify({ customer: form, cart, method: methodId, total, store_slug: STORE_SLUG })
       });
       const d = await r.json();
-      if (!r.ok) { alert('Error al crear pedido: ' + (d.error || 'desconocido')); setSaving(false); return; }
+      if (!r.ok) { alert('Error al crear pedido: ' + (d.error || 'desconocido')); setSaving(false); return null; }
       setOrderNum(d.orderNum);
       if (methodId === 'transfer') setStep(3);
       else setStep(4);
+      setSaving(false);
+      return d.orderNum;
     } catch (e) {
       alert('Error de conexión al crear pedido');
+      setSaving(false);
+      return null;
     }
-    setSaving(false);
   };
 
   return (
@@ -190,10 +193,20 @@ function CheckoutModal({cart,onClose,onSuccess,settings}){
             <div style={{fontSize:56,marginBottom:4}}>💳</div>
             <h3 style={{fontSize:17,fontWeight:800,color:"var(--navy)"}}>Pago con Mercado Pago</h3>
             <p style={{color:"var(--mid)",fontSize:13}}>Serás redirigido al checkout seguro de Mercado Pago para pagar <strong>{fmt(total)}</strong></p>
-            <div style={{background:"#FFF7F5",border:"1px solid #FED7CC",borderRadius:12,padding:12}}>
-              <p style={{fontSize:11,color:"#9A3412",fontWeight:600}}>⚙️ Activá este botón conectando tu cuenta en mercadopago.com.ar/developers</p>
-            </div>
-            <button onClick={() => createOrder(method)} disabled={saving} style={{padding:"13px",background:"#009EE3",color:"#fff",borderRadius:12,fontWeight:800,fontSize:14,fontFamily:"'Syne',sans-serif",boxShadow:"0 4px 14px rgba(0,158,227,.4)",opacity:saving?.5:1}}>{saving ? '⏳ Creando pedido...' : 'Ir a Mercado Pago →'}</button>
+            <button onClick={async ()=>{
+              if (saving) return;
+              const num = await createOrder(method);
+              if (!num) return;
+              try {
+                const r = await fetch('/api/create-preference', {
+                  method: 'POST', headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ cart, customer: form, orderNum: num })
+                });
+                const d = await r.json();
+                if (d.init_point) window.location.href = d.init_point;
+                else alert('Error al generar link de pago');
+              } catch (e) { alert('Error de conexión con Mercado Pago'); }
+            }} disabled={saving} style={{padding:"13px",background:"#009EE3",color:"#fff",borderRadius:12,fontWeight:800,fontSize:14,fontFamily:"'Syne',sans-serif",boxShadow:"0 4px 14px rgba(0,158,227,.4)",opacity:saving?.5:1}}>{saving ? '⏳ Redirigiendo...' : 'Ir a Mercado Pago →'}</button>
             <button onClick={()=>setStep(2)} style={{padding:"10px",background:"none",color:"var(--mid)",fontWeight:600,fontSize:12}}>← Cambiar método</button>
           </div>}
 
