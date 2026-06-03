@@ -230,6 +230,8 @@ export default function VitrineAR(){
   const [cat,setCat]=useState("Todos");
   const [search,setSearch]=useState("");
   const [cart,setCart]=useState([]);
+  useEffect(()=>{const saved=localStorage.getItem('vitrine_cart');if(saved)try{setCart(JSON.parse(saved))}catch(e){}}[],[]);
+  useEffect(()=>{localStorage.setItem('vitrine_cart',JSON.stringify(cart))},[cart]);
   const [showCart,setShowCart]=useState(false);
   const [showCheckout,setShowCheckout]=useState(false);
   const [sort,setSort]=useState("def");

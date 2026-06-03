@@ -27,14 +27,14 @@ export default function ProductDetail() {
   }, [id]);
 
   const addToCart = () => {
-    const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+    const cart = JSON.parse(localStorage.getItem('vitrine_cart') || '[]');
     const ex = cart.find(i => i.id === p.id);
     if (ex) {
       cart.forEach(i => { if (i.id === p.id) i.qty += 1; });
     } else {
       cart.push({ ...p, qty: 1 });
     }
-    localStorage.setItem('cart', JSON.stringify(cart));
+    localStorage.setItem('vitrine_cart', JSON.stringify(cart));
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
   };
