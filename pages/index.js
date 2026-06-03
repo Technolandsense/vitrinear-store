@@ -36,7 +36,7 @@ function ProductCard({p,onAdd}){
           <span style={{fontSize:18,fontWeight:800,color:"var(--navy)",fontFamily:"'Syne',sans-serif"}}>{fmt(p.price)}</span>
         </div>
       </div>
-      <button onClick={()=>onAdd(p)} style={{margin:"0 14px 14px",padding:"9px",borderRadius:10,background:hover?"var(--coral)":"var(--navy)",color:"#fff",fontWeight:700,fontSize:12,transition:"background .2s"}}>+ Agregar al carrito</button>
+      <button onClick={e=>{e.stopPropagation();onAdd(p)}} style={{margin:"0 14px 14px",padding:"9px",borderRadius:10,background:hover?"var(--coral)":"var(--navy)",color:"#fff",fontWeight:700,fontSize:12,transition:"background .2s"}}>+ Agregar al carrito</button>
     </div>
   );
 }
