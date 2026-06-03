@@ -221,6 +221,8 @@ export default function VitrineAR(){
   const [showCheckout,setShowCheckout]=useState(false);
   const [sort,setSort]=useState("def");
   const [toast,setToast]=useState(null);
+  const [page,setPage]=useState(1);
+  const [perPage,setPerPage]=useState(12);
   const [products,setProducts]=useState([]);
   const [settings,setSettings]=useState({});
   const [categories,setCategories]=useState([]);
@@ -259,6 +261,11 @@ export default function VitrineAR(){
   const filtered=products
     .filter(p=>(cat==="Todos"||p.category===cat)&&p.name.toLowerCase().includes(search.toLowerCase()))
     .sort((a,b)=>{if(sort==="asc")return a.price-b.price;if(sort==="desc")return b.price-a.price;if(sort==="rating")return b.rating-a.rating;return 0;});
+  const totalPages=perPage==="all"?1:Math.max(1,Math.ceil(filtered.length/perPage));
+  const safePage=Math.min(page,totalPages);
+  const paginated=perPage==="all"?filtered:filtered.slice((safePage-1)*perPage,safePage*perPage);
+
+  useEffect(()=>setPage(1),[cat,search,sort]);
 
   return (
     <div style={{minHeight:"100vh",background:"var(--cream)"}}>
@@ -337,7 +344,19 @@ export default function VitrineAR(){
 
         {filtered.length===0
           ?<div style={{textAlign:"center",padding:"60px 0"}}><div style={{fontSize:56}}>🔍</div><h3 style={{marginTop:14,color:"var(--navy)"}}>Sin resultados</h3><button onClick={()=>{setSearch("");setCat("Todos")}} style={{marginTop:14,padding:"10px 22px",background:"var(--coral)",color:"#fff",borderRadius:10,fontWeight:700,fontSize:13}}>Ver todo</button></div>
-          :<div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(210px,1fr))",gap:18}}>{filtered.map(p=><ProductCard key={p.id} p={p} onAdd={addToCart}/>)}</div>
+          :<>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(210px,1fr))",gap:18}}>{paginated.map(p=><ProductCard key={p.id} p={p} onAdd={addToCart}/>)}</div>
+            {/* pagination */}
+            {perPage!=="all"&&totalPages>1&&<div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:8,marginTop:30,flexWrap:"wrap"}}>
+              <button disabled={safePage<=1} onClick={()=>setPage(safePage-1)} style={{padding:"8px 14px",borderRadius:10,border:"1.5px solid var(--border)",background:"#fff",fontWeight:600,fontSize:12,color:safePage<=1?"var(--mid)":"var(--text)",cursor:safePage<=1?"not-allowed":"pointer",opacity:safePage<=1?.5:1}}>← Anterior</button>
+              {Array.from({length:totalPages},(_,i)=>i+1).map(n=><button key={n} onClick={()=>setPage(n)} style={{width:34,height:34,borderRadius:"50%",border:"none",fontWeight:700,fontSize:12,color:n===safePage?"#fff":"var(--text)",background:n===safePage?"var(--coral)":"var(--grey)",cursor:"pointer",transition:"all .2s"}}>{n}</button>)}
+              <button disabled={safePage>=totalPages} onClick={()=>setPage(safePage+1)} style={{padding:"8px 14px",borderRadius:10,border:"1.5px solid var(--border)",background:"#fff",fontWeight:600,fontSize:12,color:safePage>=totalPages?"var(--mid)":"var(--text)",cursor:safePage>=totalPages?"not-allowed":"pointer",opacity:safePage>=totalPages?.5:1}}>Siguiente →</button>
+              <button onClick={()=>{setPerPage("all");setPage(1)}} style={{padding:"8px 14px",borderRadius:10,border:"1.5px solid var(--border)",background:"var(--navy)",color:"#fff",fontWeight:600,fontSize:12,cursor:"pointer"}}>📄 Ver todos ({filtered.length})</button>
+            </div>}
+            {perPage==="all"&&<div style={{textAlign:"center",marginTop:24}}>
+              <button onClick={()=>setPerPage(12)} style={{padding:"8px 18px",borderRadius:10,border:"1.5px solid var(--border)",background:"#fff",fontWeight:600,fontSize:12,cursor:"pointer",color:"var(--text)"}}>← Ver menos (12 por página)</button>
+            </div>}
+          </>
         }
 
         {/* Value props */}
