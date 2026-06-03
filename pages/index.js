@@ -97,8 +97,8 @@ function CheckoutModal({cart,onClose,onSuccess,settings}){
   const count=cart.reduce((s,i)=>s+i.qty,0);
   const METHODS=[
     {id:"transfer",icon:"🏦",label:"Transferencia bancaria",sub:"CBU/Alias — acreditación inmediata",color:"#16A34A"},
-    {id:"debit",icon:"💳",label:"Tarjeta de débito",sub:"Débito instantáneo via Mercado Pago",color:"var(--navy)"},
-    {id:"credit",icon:"💎",label:"Tarjeta de crédito",sub:"Hasta 12 cuotas sin interés",color:"var(--coral)"},
+    // {id:"debit",icon:"💳",label:"Tarjeta de débito",sub:"Débito instantáneo via Mercado Pago",color:"var(--navy)"},
+    // {id:"credit",icon:"💎",label:"Tarjeta de crédito",sub:"Hasta 12 cuotas sin interés",color:"var(--coral)"},
   ];
   const allFilled=form.nombre&&form.email&&form.tel&&form.dir;
 
