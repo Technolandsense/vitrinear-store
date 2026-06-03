@@ -30,11 +30,12 @@ export default function Admin() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ password })
     });
+    const data = await r.json();
     if (r.ok) {
       setLogged(true);
-      if (!IS_MAIN || r.role === 'superadmin') loadOrders();
+      if (!IS_MAIN || data.role === 'superadmin') loadOrders();
     } else {
-      alert('Contraseña incorrecta');
+      alert(data.error || 'Contraseña incorrecta');
     }
   };
 
