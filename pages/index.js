@@ -291,7 +291,7 @@ export default function VitrineAR(){
       {/* HEADER */}
       <header style={{background:"var(--navy)",position:"sticky",top:0,zIndex:500,boxShadow:"0 2px 20px rgba(0,0,0,.3)"}}>
         <div style={{background:"var(--coral)",padding:"5px 20px",textAlign:"center"}}>
-          <p style={{color:"#fff",fontSize:11,fontWeight:600}}>🚚 Envío gratis en compras mayores a $50.000 · Córdoba capital</p>
+          <p style={{color:"#fff",fontSize:11,fontWeight:600}}>{settings?.envio_texto||'🚚 Envío gratis en compras mayores a'} {settings?.envio_minimo||'$50.000'} · {settings?.envio_zona||'Córdoba capital'}</p>
         </div>
         <div style={{maxWidth:1100,margin:"0 auto",padding:"0 20px",display:"flex",alignItems:"center",gap:14,height:62}}>
           <div style={{flexShrink:0}}>

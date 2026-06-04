@@ -41,6 +41,14 @@ export default function AdminSettings() {
   const FIELDS = [
     { key: 'store_name', label: 'Nombre de la tienda', type: 'text' },
     { key: 'store_slogan', label: 'Eslogan', type: 'text' },
+    { key: 'banner_tag', label: 'Etiqueta del banner (ej: 🔥 Ofertas)', type: 'text' },
+    { key: 'banner_title', label: 'Título del banner (ej: Todo lo que necesitás)', type: 'text' },
+    { key: 'banner_subtitle', label: 'Subtítulo del banner (ej: en un solo lugar)', type: 'text' },
+    { key: 'banner_desc', label: 'Descripción del banner', type: 'text' },
+    { key: 'banner_url', label: 'Imagen de fondo del banner (URL)', type: 'text' },
+    { key: 'envio_texto', label: 'Texto de envío gratis (ej: 🚚 Envío gratis en compras mayores a)', type: 'text' },
+    { key: 'envio_minimo', label: 'Monto mínimo para envío gratis (ej: $50.000)', type: 'text' },
+    { key: 'envio_zona', label: 'Zona de envío (ej: Córdoba capital)', type: 'text' },
     { key: 'bank_titular', label: 'Titular de la cuenta', type: 'text' },
     { key: 'bank_cuit', label: 'CUIT', type: 'text' },
     { key: 'bank_cbu', label: 'CBU', type: 'text' },
@@ -94,32 +102,11 @@ export default function AdminSettings() {
             ))}
           </div>
 
-          <h2 style={{ fontSize: 14, fontWeight: 800, color: '#0F1923', fontFamily: "'Syne',sans-serif", marginBottom: 14, marginTop: 24 }}>🖼️ Banner principal</h2>
-          <div style={{ marginBottom: 16 }}>
-            <label style={{ fontSize: 10, fontWeight: 700, color: '#8A8A8A', display: 'block', marginBottom: 4, textTransform: 'uppercase' }}>Imagen de fondo (URL)</label>
-            <input type="text" value={settings.banner_url || ''} onChange={e => setSettings({ ...settings, banner_url: e.target.value })} placeholder="https://ejemplo.com/banner.jpg" style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1.5px solid #E5E0D8', fontSize: 13 }} />
-            {settings.banner_url && (
-              <div style={{ marginTop: 8, borderRadius: 8, overflow: 'hidden', height: 100 }}>
-                <img src={settings.banner_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => e.target.style.display = 'none'} />
-              </div>
-            )}
-          </div>
-          <div style={{ marginBottom: 16 }}>
-            <label style={{ fontSize: 10, fontWeight: 700, color: '#8A8A8A', display: 'block', marginBottom: 4, textTransform: 'uppercase' }}>Texto del banner</label>
-            <input type="text" value={settings.banner_title || ''} onChange={e => setSettings({ ...settings, banner_title: e.target.value })} placeholder="Ej: ¡Ofertas de temporada!" style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1.5px solid #E5E0D8', fontSize: 13 }} />
-          </div>
-          <div style={{ marginBottom: 16 }}>
-            <label style={{ fontSize: 10, fontWeight: 700, color: '#8A8A8A', display: 'block', marginBottom: 4, textTransform: 'uppercase' }}>Subtítulo del banner</label>
-            <input type="text" value={settings.banner_subtitle || ''} onChange={e => setSettings({ ...settings, banner_subtitle: e.target.value })} placeholder="Ej: Hasta 40% off en seleccionados" style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1.5px solid #E5E0D8', fontSize: 13 }} />
-          </div>
-          <div style={{ marginBottom: 16 }}>
-            <label style={{ fontSize: 10, fontWeight: 700, color: '#8A8A8A', display: 'block', marginBottom: 4, textTransform: 'uppercase' }}>Descripción del banner</label>
-            <input type="text" value={settings.banner_desc || ''} onChange={e => setSettings({ ...settings, banner_desc: e.target.value })} placeholder="Ej: Electrónica, hogar, bazar y más" style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1.5px solid #E5E0D8', fontSize: 13 }} />
-          </div>
-          <div style={{ marginBottom: 16 }}>
-            <label style={{ fontSize: 10, fontWeight: 700, color: '#8A8A8A', display: 'block', marginBottom: 4, textTransform: 'uppercase' }}>Etiqueta del banner (ej: 🔥 Ofertas)</label>
-            <input type="text" value={settings.banner_tag || ''} onChange={e => setSettings({ ...settings, banner_tag: e.target.value })} placeholder="🔥 Ofertas especiales" style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1.5px solid #E5E0D8', fontSize: 13 }} />
-          </div>
+          {settings.banner_url && (
+            <div style={{ marginBottom: 16, borderRadius: 8, overflow: 'hidden', height: 100 }}>
+              <img src={settings.banner_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => e.target.style.display = 'none'} />
+            </div>
+          )}
 
           <h2 style={{ fontSize: 14, fontWeight: 800, color: '#0F1923', fontFamily: "'Syne',sans-serif", marginBottom: 14, marginTop: 24 }}>🏷️ Propiedades visuales (inicio)</h2>
           {PROPS.map((p, i) => (
