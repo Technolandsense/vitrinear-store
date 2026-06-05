@@ -31,6 +31,15 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
+      - name: Accept Android licenses
+        run: yes | $ANDROID_HOME/tools/bin/sdkmanager --licenses || true
+
+      - name: Install Gradle
+        run: |
+          curl -sL "https://services.gradle.org/distributions/gradle-8.5-bin.zip" -o /tmp/gradle.zip
+          unzip -q /tmp/gradle.zip -d /opt
+          echo "/opt/gradle-8.5/bin" >> $GITHUB_PATH
+
       - name: Set store URL in config
         run: |
           URL="${{ github.event.inputs.store_url || 'https://vitrinear.com' }}"
@@ -43,41 +52,30 @@ jobs:
       - name: Create local.properties
         run: echo "sdk.dir=$ANDROID_HOME" > android/local.properties
 
-      - name: Grant execute permission
-        run: chmod +x android/gradlew
+      - name: Generate Gradle wrapper
+        working-directory: ./android
+        run: gradle wrapper --gradle-version=8.5
 
       - name: Build APK
         working-directory: ./android
         run: ./gradlew assembleRelease --no-daemon --stacktrace
 
-      - name: Sign APK
-        if: env.KEYSTORE_BASE64
-        uses: r0adkll/sign-android-release@v1
-        with:
-          releaseDirectory: android/app/build/outputs/apk/release
-          signingKeyBase64: ${{ secrets.KEYSTORE_BASE64 }}
-          alias: ${{ secrets.KEY_ALIAS }}
-          keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
-          keyPassword: ${{ secrets.KEY_PASSWORD }}
-
-      - name: Rename APK with store name
+      - name: Rename APK
         run: |
-          mv android/app/build/outputs/apk/release/app-release-unsigned.apk \
-             android/app/build/outputs/apk/release/${{ env.NAME }}.apk 2>/dev/null || true
-          mv android/app/build/outputs/apk/release/app-release.apk \
+          cp android/app/build/outputs/apk/release/app-release-unsigned.apk \
              android/app/build/outputs/apk/release/${{ env.NAME }}.apk 2>/dev/null || true
 
-      - name: Upload APK artifact
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.NAME }}-apk
-          path: android/app/build/outputs/apk/release/*.apk
+          path: android/app/build/outputs/apk/release/${{ env.NAME }}.apk
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
-        if: ${{ github.event_name == 'push' || github.event.inputs.store_url != '' }}
+        if: github.event_name == 'workflow_dispatch'
         with:
           tag_name: apk-${{ github.run_number }}
           name: ${{ env.NAME }} v${{ github.run_number }}
-          files: android/app/build/outputs/apk/release/*.apk
+          files: android/app/build/outputs/apk/release/${{ env.NAME }}.apk
           generate_release_notes: false
