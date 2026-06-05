@@ -226,11 +226,11 @@ function CheckoutModal({cart,onClose,onSuccess,settings}){
   );
 }
 
-export default function VitrineAR(){
+export default function VitrineAR({ initialProducts, initialSettings, initialCategories }){
   const [cat,setCat]=useState("Todos");
   const [search,setSearch]=useState("");
   const [cart,setCart]=useState([]);
-  useEffect(()=>{const saved=localStorage.getItem('vitrine_cart');if(saved)try{setCart(JSON.parse(saved))}catch(e){}}[],[]);
+  useEffect(()=>{const saved=localStorage.getItem('vitrine_cart');if(saved)try{setCart(JSON.parse(saved))}catch(e){}} ,[]);
   useEffect(()=>{localStorage.setItem('vitrine_cart',JSON.stringify(cart))},[cart]);
   const [showCart,setShowCart]=useState(false);
   const [showCheckout,setShowCheckout]=useState(false);
@@ -238,24 +238,9 @@ export default function VitrineAR(){
   const [toast,setToast]=useState(null);
   const [page,setPage]=useState(1);
   const [perPage,setPerPage]=useState(12);
-  const [products,setProducts]=useState([]);
-  const [settings,setSettings]=useState({});
-  const [categories,setCategories]=useState([]);
-
-  useEffect(() => {
-    const sf = STORE_SLUG ? (t) => t.eq('store_slug', STORE_SLUG) : (t) => t;
-    Promise.all([
-      sf(supabasePublic.from('products').select('*').eq('active', true)).order('id'),
-      sf(supabasePublic.from('settings').select('*')),
-      sf(supabasePublic.from('categories').select('*')).order('sort_order')
-    ]).then(([prodRes, setRes, catRes]) => {
-      setProducts(prodRes.data || []);
-      const obj = {};
-      (setRes.data || []).forEach(s => obj[s.key] = s.value);
-      setSettings(obj);
-      setCategories(catRes.data || []);
-    });
-  }, []);
+  const [products,setProducts]=useState(initialProducts);
+  const [settings,setSettings]=useState(initialSettings);
+  const [categories,setCategories]=useState(initialCategories);
 
   const cartCount=cart.reduce((s,i)=>s+i.qty,0);
 
@@ -401,7 +386,7 @@ export default function VitrineAR(){
             </div>
             <div>
               <p style={{color:"#fff",fontWeight:700,marginBottom:8,fontSize:12,textTransform:"uppercase",letterSpacing:.5}}>Pagos aceptados</p>
-              {["💳 Débito y crédito","🏦 Transferencia bancaria","📱 Mercado Pago","📱 MODO / Ualá"].map(m=><p key={m} style={{fontSize:12,marginBottom:3}}>{m}</p>)}
+              {["💳 Débito y crédito","🏦 Transferencia bancaria","📱 Mercado Pago","📱 MODO / Ualá","📲 App Android"].map(m=><p key={m} style={{fontSize:12,marginBottom:3}}>{m === "📲 App Android" ? <a href="/descargar" style={{color:"rgba(255,255,255,.55)",textDecoration:"none"}}>📲 App Android</a> : m}</p>)}
             </div>
             <div>
               <p style={{color:"#fff",fontWeight:700,marginBottom:8,fontSize:12,textTransform:"uppercase",letterSpacing:.5}}>Contacto</p>
@@ -421,4 +406,22 @@ export default function VitrineAR(){
       {showCheckout&&<CheckoutModal cart={cart} onClose={()=>setShowCheckout(false)} onSuccess={()=>{setCart([]);setShowCheckout(false);}} settings={settings}/>}
     </div>
   );
+}
+
+export async function getServerSideProps() {
+  const sf = STORE_SLUG ? (t) => t.eq('store_slug', STORE_SLUG) : (t) => t;
+  const [prodRes, setRes, catRes] = await Promise.all([
+    sf(supabasePublic.from('products').select('*').eq('active', true)).order('id'),
+    sf(supabasePublic.from('settings').select('*')),
+    sf(supabasePublic.from('categories').select('*')).order('sort_order')
+  ]);
+  const initialSettings = {};
+  (setRes.data || []).forEach(s => initialSettings[s.key] = s.value);
+  return {
+    props: {
+      initialProducts: prodRes.data || [],
+      initialSettings,
+      initialCategories: catRes.data || []
+    }
+  };
 }

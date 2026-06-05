@@ -1,0 +1,82 @@
+name: Build APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      store_url:
+        description: 'URL de la tienda (ej: https://tienda.vercel.app)'
+        required: true
+        default: 'https://vitrinear.com'
+      store_name:
+        description: 'Nombre de la tienda para el APK'
+        required: true
+        default: 'VitrineAR'
+  push:
+    branches: [main]
+    paths:
+      - 'android/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Set store URL in config
+        run: |
+          URL="${{ github.event.inputs.store_url || 'https://vitrinear.com' }}"
+          NAME="${{ github.event.inputs.store_name || 'VitrineAR' }}"
+          sed -i "s|STORE_URL_PLACEHOLDER|$URL|g" android/app/src/main/res/values/strings.xml
+          sed -i "s|STORE_NAME_PLACEHOLDER|$NAME|g" android/app/src/main/res/values/strings.xml
+          echo "URL=$URL" >> $GITHUB_ENV
+          echo "NAME=$NAME" >> $GITHUB_ENV
+
+      - name: Build APK
+        working-directory: ./android
+        run: |
+          chmod +x ./gradlew 2>/dev/null || true
+          if [ ! -f gradlew ]; then
+            gradle wrapper
+          fi
+          ./gradlew assembleRelease --no-daemon
+
+      - name: Sign APK
+        if: env.KEYSTORE_BASE64
+        uses: r0adkll/sign-android-release@v1
+        with:
+          releaseDirectory: android/app/build/outputs/apk/release
+          signingKeyBase64: ${{ secrets.KEYSTORE_BASE64 }}
+          alias: ${{ secrets.KEY_ALIAS }}
+          keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
+          keyPassword: ${{ secrets.KEY_PASSWORD }}
+
+      - name: Rename APK with store name
+        run: |
+          mv android/app/build/outputs/apk/release/app-release-unsigned.apk \
+             android/app/build/outputs/apk/release/${{ env.NAME }}.apk 2>/dev/null || true
+          mv android/app/build/outputs/apk/release/app-release.apk \
+             android/app/build/outputs/apk/release/${{ env.NAME }}.apk 2>/dev/null || true
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.NAME }}-apk
+          path: android/app/build/outputs/apk/release/*.apk
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        if: ${{ github.event_name == 'push' || github.event.inputs.store_url != '' }}
+        with:
+          tag_name: apk-${{ github.run_number }}
+          name: ${{ env.NAME }} v${{ github.run_number }}
+          files: android/app/build/outputs/apk/release/*.apk
+          generate_release_notes: false
