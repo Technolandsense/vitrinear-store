@@ -31,9 +31,6 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-
       - name: Set store URL in config
         run: |
           URL="${{ github.event.inputs.store_url || 'https://vitrinear.com' }}"
@@ -46,9 +43,12 @@ jobs:
       - name: Create local.properties
         run: echo "sdk.dir=$ANDROID_HOME" > android/local.properties
 
+      - name: Grant execute permission
+        run: chmod +x android/gradlew
+
       - name: Build APK
         working-directory: ./android
-        run: ./gradlew assembleRelease --no-daemon
+        run: ./gradlew assembleRelease --no-daemon --stacktrace
 
       - name: Sign APK
         if: env.KEYSTORE_BASE64

@@ -1,0 +1,13 @@
+#!/bin/sh
+
+# Gradle wrapper script
+DIR="$( cd "$( dirname "$0" )" && pwd )"
+
+if [ ! -f "$DIR/gradle/wrapper/gradle-wrapper.jar" ]; then
+    echo "Downloading Gradle wrapper..."
+    mkdir -p "$DIR/gradle/wrapper"
+    curl -sL "https://github.com/gradle/gradle/raw/v8.5.0/gradle/wrapper/gradle-wrapper.jar" \
+      -o "$DIR/gradle/wrapper/gradle-wrapper.jar"
+fi
+
+java -Xmx1024m -jar "$DIR/gradle/wrapper/gradle-wrapper.jar" "$@"
