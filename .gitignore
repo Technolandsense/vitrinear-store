@@ -7,3 +7,6 @@ dist
 pnpm
 
 tmp/
+.vercel
+.env*
+public/apk/

@@ -1,30 +1,10 @@
-import { useState, useEffect } from "react";
 import { supabasePublic } from "../lib/supabase";
 import { STORE_SLUG } from "../lib/store";
 
 const GITHUB_OWNER = process.env.NEXT_PUBLIC_GITHUB_OWNER || "Technolandsense";
 const GITHUB_REPO = process.env.NEXT_PUBLIC_GITHUB_REPO || "vitrinear-store";
 
-export default function Descargar() {
-  const [settings, setSettings] = useState({});
-  const [release, setRelease] = useState(null);
-
-  useEffect(() => {
-    const sf = STORE_SLUG ? (t) => t.eq('store_slug', STORE_SLUG) : (t) => t;
-    sf(supabasePublic.from('settings').select('*')).then(({ data }) => {
-      const obj = {};
-      (data || []).forEach(s => obj[s.key] = s.value);
-      setSettings(obj);
-    });
-    fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/releases/latest`)
-      .then(r => r.json())
-      .then(d => setRelease(d.tag_name ? d : null))
-      .catch(() => {});
-  }, []);
-
-  const storeName = settings?.store_name || "VitrineAR";
-  const apkUrl = release?.assets?.[0]?.browser_download_url;
-
+export default function Descargar({ storeName = "VitrineAR", apkUrl }) {
   return (
     <div style={{ minHeight: "100vh", background: "var(--cream)", color: "var(--text)" }}>
       <style>{`body{margin:0;font-family:'Plus Jakarta Sans',sans-serif;background:#FAF8F4;color:#1C1C1C}:root{--navy:#0F1923;--coral:#FF4B2B;--cream:#FAF8F4}`}</style>
@@ -69,4 +49,31 @@ export default function Descargar() {
       </div>
     </div>
   );
+}
+
+export async function getServerSideProps() {
+  let storeName = "VitrineAR";
+  const sf = STORE_SLUG ? (t) => t.eq("store_slug", STORE_SLUG) : (t) => t;
+  try {
+    const { data } = await sf(supabasePublic.from("settings").select("*"));
+    if (data) {
+      const obj = {};
+      data.forEach((s) => (obj[s.key] = s.value));
+      storeName = obj.store_name || storeName;
+    }
+  } catch (_) {}
+
+  let apkUrl = null;
+  try {
+    const res = await fetch(
+      `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/releases/latest`,
+      { headers: { "User-Agent": "vitrinear-store" } }
+    );
+    const release = await res.json();
+    if (release?.assets?.[0]?.browser_download_url) {
+      apkUrl = "/apk/vitrinear.apk";
+    }
+  } catch (_) {}
+
+  return { props: { storeName, apkUrl } };
 }
