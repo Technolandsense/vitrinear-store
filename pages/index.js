@@ -387,6 +387,14 @@ export default function VitrineAR({ initialProducts, initialSettings, initialCat
       {/* FOOTER */}
       <footer style={{background:"var(--navy)",color:"rgba(255,255,255,.55)",padding:"36px 20px 20px",marginTop:50}}>
         <div style={{maxWidth:1100,margin:"0 auto"}}>
+          <a href="/descargar" style={{display:"flex",alignItems:"center",gap:12,background:"rgba(255,255,255,.08)",borderRadius:14,padding:"14px 18px",marginBottom:24,textDecoration:"none",justifyContent:"center",transition:"background .2s"}} onMouseEnter={e=>e.currentTarget.style.background="rgba(255,255,255,.14)"} onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,.08)"}>
+            <span style={{fontSize:32}}>🤖</span>
+            <div>
+              <p style={{color:"#fff",fontWeight:800,fontSize:16,marginBottom:2,fontFamily:"'Syne',sans-serif"}}>App Android</p>
+              <p style={{color:"rgba(255,255,255,.4)",fontSize:12}}>Descargá la app y llevá la tienda en tu celular</p>
+            </div>
+            <span style={{color:"var(--coral)",fontSize:20,fontWeight:700}}>→</span>
+          </a>
           <div style={{display:"flex",gap:36,flexWrap:"wrap",marginBottom:28}}>
             <div style={{flex:1,minWidth:180}}>
               <h3 style={{color:"#fff",fontSize:18,fontWeight:800,marginBottom:6}}>{settings?.store_name||"Vitrine"}<span style={{color:"var(--coral)"}}>AR</span></h3>
@@ -394,7 +402,7 @@ export default function VitrineAR({ initialProducts, initialSettings, initialCat
             </div>
             <div>
               <p style={{color:"#fff",fontWeight:700,marginBottom:8,fontSize:12,textTransform:"uppercase",letterSpacing:.5}}>{settings?.footer_payments_heading||"Pagos aceptados"}</p>
-              {(settings?.footer_payments ? safeJSON(settings.footer_payments) : ["💳 Débito y crédito","🏦 Transferencia bancaria","📱 Mercado Pago","📱 MODO / Ualá","📲 App Android"]).map(m=><p key={m} style={{fontSize:12,marginBottom:3}}>{m === "📲 App Android" ? <a href="/descargar" style={{color:"rgba(255,255,255,.55)",textDecoration:"none"}}>📲 App Android</a> : m}</p>)}
+              {(settings?.footer_payments ? safeJSON(settings.footer_payments) : ["💳 Débito y crédito","🏦 Transferencia bancaria","📱 Mercado Pago","📱 MODO / Ualá"]).map(m=><p key={m} style={{fontSize:12,marginBottom:3}}>{m}</p>)}
             </div>
             <div>
               <p style={{color:"#fff",fontWeight:700,marginBottom:8,fontSize:12,textTransform:"uppercase",letterSpacing:.5}}>{settings?.footer_contact_heading||"Contacto"}</p>

@@ -57,6 +57,12 @@ export default function AdminSettings() {
     { key: 'whatsapp', label: 'WhatsApp', type: 'text' },
     { key: 'email', label: 'Email de contacto', type: 'email' },
     { key: 'email_pagos', label: 'Email para comprobantes', type: 'email' },
+    { key: 'store_desc', label: 'Descripción en footer', type: 'text' },
+    { key: 'store_location', label: 'Ubicación (ej: Córdoba, Argentina)', type: 'text' },
+    { key: 'hero_btn1', label: 'Botón hero 1 (ej: Ver electrónica →)', type: 'text' },
+    { key: 'hero_btn1_cat', label: 'Categoría del botón hero 1', type: 'text' },
+    { key: 'hero_btn2', label: 'Botón hero 2 (ej: Ver todo el catálogo)', type: 'text' },
+    { key: 'hero_btn2_cat', label: 'Categoría del botón hero 2', type: 'text' },
   ];
 
   const COLORS = [
@@ -117,6 +123,32 @@ export default function AdminSettings() {
                 <input value={settings[p.titleKey] || ''} onChange={e => setSettings({ ...settings, [p.titleKey]: e.target.value })} placeholder="Título" style={{ flex: 1, padding: '10px 12px', borderRadius: 8, border: '1.5px solid #E5E0D8', fontSize: 13 }} />
               </div>
               <input value={settings[p.descKey] || ''} onChange={e => setSettings({ ...settings, [p.descKey]: e.target.value })} placeholder="Descripción" style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1.5px solid #E5E0D8', fontSize: 13 }} />
+            </div>
+          ))}
+
+          <h2 style={{ fontSize: 14, fontWeight: 800, color: '#0F1923', fontFamily: "'Syne',sans-serif", marginBottom: 14, marginTop: 24 }}>📊 Estadísticas del hero</h2>
+          {[1,2,3,4].map(i => (
+            <div key={`stat${i}`} style={{ marginBottom: 12, padding: 12, background: '#FAF8F4', borderRadius: 12, border: '1px solid #E5E0D8' }}>
+              <p style={{ fontSize: 11, fontWeight: 700, color: '#8A8A8A', marginBottom: 8 }}>ESTADÍSTICA {i}</p>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <input value={settings[`stat${i}_icon`] || ''} onChange={e => setSettings({...settings,[`stat${i}_icon`]: e.target.value})} placeholder="Icono" style={{ width: 50, padding: '8px', borderRadius: 8, border: '1.5px solid #E5E0D8', fontSize: 13, textAlign: 'center' }} />
+                <input value={settings[`stat${i}_value`] || ''} onChange={e => setSettings({...settings,[`stat${i}_value`]: e.target.value})} placeholder="Valor (ej: 12+)" style={{ flex: 1, padding: '8px 10px', borderRadius: 8, border: '1.5px solid #E5E0D8', fontSize: 13 }} />
+                <input value={settings[`stat${i}_label`] || ''} onChange={e => setSettings({...settings,[`stat${i}_label`]: e.target.value})} placeholder="Etiqueta (ej: Categorías)" style={{ flex: 1, padding: '8px 10px', borderRadius: 8, border: '1.5px solid #E5E0D8', fontSize: 13 }} />
+              </div>
+            </div>
+          ))}
+
+          <h2 style={{ fontSize: 14, fontWeight: 800, color: '#0F1923', fontFamily: "'Syne',sans-serif", marginBottom: 14, marginTop: 24 }}>📱 Footer</h2>
+          {[
+            { key: 'footer_payments_heading', label: 'Título métodos de pago', placeholder: 'Pagos aceptados' },
+            { key: 'footer_payments', label: 'Métodos de pago (JSON array)', placeholder: '["💳 Débito","🏦 Transferencia"]' },
+            { key: 'footer_contact_heading', label: 'Título sección contacto', placeholder: 'Contacto' },
+            { key: 'footer_made_with', label: 'Texto final del footer', placeholder: 'Hecho con 🧡 para el comercio local' },
+          ].map(f => (
+            <div key={f.key} style={{ marginBottom: 14 }}>
+              <label style={{ fontSize: 11, fontWeight: 700, color: '#0F1923', display: 'block', marginBottom: 5, textTransform: 'uppercase', letterSpacing: 0.5 }}>{f.label}</label>
+              <input type="text" value={settings[f.key] || ''} onChange={e => setSettings({...settings,[f.key]: e.target.value})} placeholder={f.placeholder}
+                style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1.5px solid #E5E0D8', fontSize: 13 }} />
             </div>
           ))}
 
