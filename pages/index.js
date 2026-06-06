@@ -280,7 +280,7 @@ export default function VitrineAR({ initialProducts, initialSettings, initialCat
         </div>
         <div style={{maxWidth:1100,margin:"0 auto",padding:"0 20px",display:"flex",alignItems:"center",gap:14,height:62}}>
           <div style={{flexShrink:0}}>
-            <h1 style={{color:"#fff",fontSize:20,fontWeight:800,letterSpacing:-.5,fontFamily:"'Syne',sans-serif"}}>{settings?.store_name||"Vitrine"}<span style={{color:"var(--coral)"}}>AR</span></h1>
+            <h1 style={{color:"#fff",fontSize:20,fontWeight:800,letterSpacing:-.5,fontFamily:"'Syne',sans-serif"}}>{settings?.store_name||"Mi Tienda"}</h1>
             <p style={{color:"rgba(255,255,255,.35)",fontSize:8,letterSpacing:2,textTransform:"uppercase",marginTop:-2}}>{settings?.store_slogan||"Tu tienda online"}</p>
           </div>
           <div style={{flex:1,position:"relative",maxWidth:440}}>
@@ -381,8 +381,8 @@ export default function VitrineAR({ initialProducts, initialSettings, initialCat
         <div style={{maxWidth:1100,margin:"0 auto"}}>
           <div style={{display:"flex",gap:36,flexWrap:"wrap",marginBottom:28}}>
             <div style={{flex:1,minWidth:180}}>
-              <h3 style={{color:"#fff",fontSize:18,fontWeight:800,marginBottom:6}}>{settings?.store_name||"Vitrine"}<span style={{color:"var(--coral)"}}>AR</span></h3>
-              <p style={{fontSize:12,lineHeight:1.7}}>Tu tienda online de confianza en Córdoba. Electrónica, hogar, bazar y más.</p>
+              <h3 style={{color:"#fff",fontSize:18,fontWeight:800,marginBottom:6}}>{settings?.store_name||"Mi Tienda"}</h3>
+              <p style={{fontSize:12,lineHeight:1.7}}>{settings?.store_desc||"Tu tienda online"}</p>
             </div>
             <div>
               <p style={{color:"#fff",fontWeight:700,marginBottom:8,fontSize:12,textTransform:"uppercase",letterSpacing:.5}}>Pagos aceptados</p>
@@ -390,13 +390,13 @@ export default function VitrineAR({ initialProducts, initialSettings, initialCat
             </div>
             <div>
               <p style={{color:"#fff",fontWeight:700,marginBottom:8,fontSize:12,textTransform:"uppercase",letterSpacing:.5}}>Contacto</p>
-              <p style={{fontSize:12,marginBottom:3}}>📍 Córdoba, Argentina</p>
+              {settings?.store_location && <p style={{fontSize:12,marginBottom:3}}>📍 {settings.store_location}</p>}
               <p style={{fontSize:12,marginBottom:3}}>📧 {settings?.email||"info@vitrinear.com.ar"}</p>
               <p style={{fontSize:12,marginBottom:3}}>💬 {settings?.whatsapp||"+54 9 351 000-0000"}</p>
             </div>
           </div>
           <div style={{borderTop:"1px solid rgba(255,255,255,.1)",paddingTop:16,display:"flex",justifyContent:"space-between",flexWrap:"wrap",gap:6}}>
-            <p style={{fontSize:11}}>© 2025 {settings?.store_name||"VitrineAR"} · Córdoba, Argentina</p>
+            <p style={{fontSize:11}}>© {new Date().getFullYear()} {settings?.store_name||"Mi Tienda"}{settings?.store_location ? ` · ${settings.store_location}` : ""}</p>
             <p style={{fontSize:11}}>Hecho con 🧡 para el comercio local</p>
           </div>
         </div>
