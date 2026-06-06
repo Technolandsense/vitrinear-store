@@ -226,6 +226,8 @@ function CheckoutModal({cart,onClose,onSuccess,settings}){
   );
 }
 
+const safeJSON = (v) => { try { return JSON.parse(v) } catch { return [v] } };
+
 export default function VitrineAR({ initialProducts, initialSettings, initialCategories }){
   const [cat,setCat]=useState("Todos");
   const [search,setSearch]=useState("");
@@ -280,7 +282,7 @@ export default function VitrineAR({ initialProducts, initialSettings, initialCat
         </div>
         <div style={{maxWidth:1100,margin:"0 auto",padding:"0 20px",display:"flex",alignItems:"center",gap:14,height:62}}>
           <div style={{flexShrink:0}}>
-            <h1 style={{color:"#fff",fontSize:20,fontWeight:800,letterSpacing:-.5,fontFamily:"'Syne',sans-serif"}}>{settings?.store_name||"Mi Tienda"}</h1>
+            <h1 style={{color:"#fff",fontSize:20,fontWeight:800,letterSpacing:-.5,fontFamily:"'Syne',sans-serif"}}>{settings?.store_name||"Vitrine"}<span style={{color:"var(--coral)"}}>AR</span></h1>
             <p style={{color:"rgba(255,255,255,.35)",fontSize:8,letterSpacing:2,textTransform:"uppercase",marginTop:-2}}>{settings?.store_slogan||"Tu tienda online"}</p>
           </div>
           <div style={{flex:1,position:"relative",maxWidth:440}}>
@@ -311,16 +313,22 @@ export default function VitrineAR({ initialProducts, initialSettings, initialCat
           </h2>
           <p style={{color:"rgba(255,255,255,.6)",fontSize:15,marginBottom:28,lineHeight:1.6}}>{settings.banner_desc || 'Electrónica, hogar, bazar y más — pago seguro, envío a Córdoba'}</p>
           <div style={{display:"flex",gap:10,justifyContent:"center",flexWrap:"wrap"}}>
-            <button onClick={()=>setCat("Electrónica")} style={{padding:"12px 26px",background:"var(--coral)",color:"#fff",borderRadius:12,fontWeight:800,fontSize:14,fontFamily:"'Syne',sans-serif",boxShadow:"0 4px 18px rgba(255,75,43,.5)"}}>Ver electrónica →</button>
-            <button onClick={()=>setCat("Todos")} style={{padding:"12px 26px",background:"rgba(255,255,255,.1)",color:"#fff",borderRadius:12,fontWeight:700,fontSize:14,border:"1.5px solid rgba(255,255,255,.2)"}}>Ver todo el catálogo</button>
+            <button onClick={()=>setCat(settings.hero_btn1_cat||"Electrónica")} style={{padding:"12px 26px",background:"var(--coral)",color:"#fff",borderRadius:12,fontWeight:800,fontSize:14,fontFamily:"'Syne',sans-serif",boxShadow:"0 4px 18px rgba(255,75,43,.5)"}}>{settings.hero_btn1||"Ver electrónica →"}</button>
+            <button onClick={()=>setCat(settings.hero_btn2_cat||"Todos")} style={{padding:"12px 26px",background:"rgba(255,255,255,.1)",color:"#fff",borderRadius:12,fontWeight:700,fontSize:14,border:"1.5px solid rgba(255,255,255,.2)"}}>{settings.hero_btn2||"Ver todo el catálogo"}</button>
           </div>
           <div style={{display:"flex",gap:28,justifyContent:"center",marginTop:36,flexWrap:"wrap"}}>
-            {[["12+","Categorías"],["500+","Productos"],["⭐ 4.7","Calificación"],["🚚","Envío rápido"]].map(([n,l])=>(
-              <div key={l} style={{textAlign:"center"}}>
-                <p style={{color:"var(--coral)",fontWeight:800,fontSize:18,fontFamily:"'Syne',sans-serif"}}>{n}</p>
-                <p style={{color:"rgba(255,255,255,.45)",fontSize:11}}>{l}</p>
-              </div>
-            ))}
+            {[1,2,3,4].map(i=>{
+              const val = settings[`stat${i}_value`];
+              const lbl = settings[`stat${i}_label`];
+              const ico = settings[`stat${i}_icon`];
+              if (!val && !lbl) return null;
+              return (
+                <div key={i} style={{textAlign:"center"}}>
+                  <p style={{color:"var(--coral)",fontWeight:800,fontSize:18,fontFamily:"'Syne',sans-serif"}}>{ico||''} {val}</p>
+                  <p style={{color:"rgba(255,255,255,.45)",fontSize:11}}>{lbl}</p>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -381,15 +389,15 @@ export default function VitrineAR({ initialProducts, initialSettings, initialCat
         <div style={{maxWidth:1100,margin:"0 auto"}}>
           <div style={{display:"flex",gap:36,flexWrap:"wrap",marginBottom:28}}>
             <div style={{flex:1,minWidth:180}}>
-              <h3 style={{color:"#fff",fontSize:18,fontWeight:800,marginBottom:6}}>{settings?.store_name||"Mi Tienda"}</h3>
+              <h3 style={{color:"#fff",fontSize:18,fontWeight:800,marginBottom:6}}>{settings?.store_name||"Vitrine"}<span style={{color:"var(--coral)"}}>AR</span></h3>
               <p style={{fontSize:12,lineHeight:1.7}}>{settings?.store_desc||"Tu tienda online"}</p>
             </div>
             <div>
-              <p style={{color:"#fff",fontWeight:700,marginBottom:8,fontSize:12,textTransform:"uppercase",letterSpacing:.5}}>Pagos aceptados</p>
-              {["💳 Débito y crédito","🏦 Transferencia bancaria","📱 Mercado Pago","📱 MODO / Ualá","📲 App Android"].map(m=><p key={m} style={{fontSize:12,marginBottom:3}}>{m === "📲 App Android" ? <a href="/descargar" style={{color:"rgba(255,255,255,.55)",textDecoration:"none"}}>📲 App Android</a> : m}</p>)}
+              <p style={{color:"#fff",fontWeight:700,marginBottom:8,fontSize:12,textTransform:"uppercase",letterSpacing:.5}}>{settings?.footer_payments_heading||"Pagos aceptados"}</p>
+              {(settings?.footer_payments ? safeJSON(settings.footer_payments) : ["💳 Débito y crédito","🏦 Transferencia bancaria","📱 Mercado Pago","📱 MODO / Ualá","📲 App Android"]).map(m=><p key={m} style={{fontSize:12,marginBottom:3}}>{m === "📲 App Android" ? <a href="/descargar" style={{color:"rgba(255,255,255,.55)",textDecoration:"none"}}>📲 App Android</a> : m}</p>)}
             </div>
             <div>
-              <p style={{color:"#fff",fontWeight:700,marginBottom:8,fontSize:12,textTransform:"uppercase",letterSpacing:.5}}>Contacto</p>
+              <p style={{color:"#fff",fontWeight:700,marginBottom:8,fontSize:12,textTransform:"uppercase",letterSpacing:.5}}>{settings?.footer_contact_heading||"Contacto"}</p>
               {settings?.store_location && <p style={{fontSize:12,marginBottom:3}}>📍 {settings.store_location}</p>}
               <p style={{fontSize:12,marginBottom:3}}>📧 {settings?.email||"info@vitrinear.com.ar"}</p>
               <p style={{fontSize:12,marginBottom:3}}>💬 {settings?.whatsapp||"+54 9 351 000-0000"}</p>
@@ -397,7 +405,7 @@ export default function VitrineAR({ initialProducts, initialSettings, initialCat
           </div>
           <div style={{borderTop:"1px solid rgba(255,255,255,.1)",paddingTop:16,display:"flex",justifyContent:"space-between",flexWrap:"wrap",gap:6}}>
             <p style={{fontSize:11}}>© {new Date().getFullYear()} {settings?.store_name||"Mi Tienda"}{settings?.store_location ? ` · ${settings.store_location}` : ""}</p>
-            <p style={{fontSize:11}}>Hecho con 🧡 para el comercio local</p>
+            <p style={{fontSize:11}}>{settings?.footer_made_with||"Hecho con 🧡 para el comercio local"}</p>
           </div>
         </div>
       </footer>
